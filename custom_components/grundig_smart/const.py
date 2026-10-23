@@ -10,11 +10,25 @@ MANUFACTURER: Final = "Grundig"
 
 CONF_SCAN_INTERVAL: Final = "scan_interval"
 CONF_TV_INFO: Final = "tv_info"
+CONF_WOL_ENABLED: Final = "wol_enabled"
+CONF_WOL_BROADCAST_ADDRESS: Final = "wol_broadcast_address"
+CONF_WOL_BROADCAST_PORT: Final = "wol_broadcast_port"
+CONF_WOL_TIMEOUT: Final = "wol_timeout"
+CONF_WOL_SEND_POWER: Final = "wol_send_power"
+
 DEFAULT_PORT: Final = 8085
 DEFAULT_SCAN_INTERVAL: Final = 30
 MIN_SCAN_INTERVAL: Final = 5
 MAX_SCAN_INTERVAL: Final = 300
 DEFAULT_NAME: Final = "Grundig TV"
+
+DEFAULT_WOL_ENABLED: Final = True
+DEFAULT_WOL_BROADCAST_ADDRESS: Final = "255.255.255.255"
+DEFAULT_WOL_BROADCAST_PORT: Final = 9
+DEFAULT_WOL_TIMEOUT: Final = 30
+MIN_WOL_TIMEOUT: Final = 5
+MAX_WOL_TIMEOUT: Final = 120
+DEFAULT_WOL_SEND_POWER: Final = False
 
 # HTTP endpoints exposed by the TV on port 8085.
 PATH_TV_INFO: Final = "/gettvinfo"

@@ -19,12 +19,24 @@ from .api import GrundigApi, GrundigApiError, GrundigConnectionError
 from .const import (
     CONF_SCAN_INTERVAL,
     CONF_TV_INFO,
+    CONF_WOL_BROADCAST_ADDRESS,
+    CONF_WOL_BROADCAST_PORT,
+    CONF_WOL_ENABLED,
+    CONF_WOL_SEND_POWER,
+    CONF_WOL_TIMEOUT,
     DEFAULT_NAME,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_WOL_BROADCAST_ADDRESS,
+    DEFAULT_WOL_BROADCAST_PORT,
+    DEFAULT_WOL_ENABLED,
+    DEFAULT_WOL_SEND_POWER,
+    DEFAULT_WOL_TIMEOUT,
     DOMAIN,
     MAX_SCAN_INTERVAL,
+    MAX_WOL_TIMEOUT,
     MIN_SCAN_INTERVAL,
+    MIN_WOL_TIMEOUT,
 )
 
 
@@ -107,28 +119,73 @@ class GrundigOptionsFlow(OptionsFlow):
         self,
         user_input: dict[str, Any] | None = None,
     ) -> ConfigFlowResult:
-        """Manage the poll interval."""
+        """Manage the poll interval and Wake-on-LAN."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
-        current = self.config_entry.options.get(
+        options = self.config_entry.options
+        current_scan_interval = options.get(
             CONF_SCAN_INTERVAL,
             DEFAULT_SCAN_INTERVAL,
         )
+        wol_enabled = options.get(CONF_WOL_ENABLED, DEFAULT_WOL_ENABLED)
+        wol_broadcast_address = options.get(
+            CONF_WOL_BROADCAST_ADDRESS,
+            DEFAULT_WOL_BROADCAST_ADDRESS,
+        )
+        wol_broadcast_port = options.get(
+            CONF_WOL_BROADCAST_PORT,
+            DEFAULT_WOL_BROADCAST_PORT,
+        )
+        wol_timeout = options.get(CONF_WOL_TIMEOUT, DEFAULT_WOL_TIMEOUT)
+        wol_send_power = options.get(
+            CONF_WOL_SEND_POWER,
+            DEFAULT_WOL_SEND_POWER,
+        )
+
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
                 {
                     vol.Optional(
                         CONF_SCAN_INTERVAL,
-                        default=current,
+                        default=current_scan_interval,
                     ): vol.All(
                         vol.Coerce(int),
                         vol.Range(
                             min=MIN_SCAN_INTERVAL,
                             max=MAX_SCAN_INTERVAL,
                         ),
-                    )
+                    ),
+                    vol.Optional(
+                        CONF_WOL_ENABLED,
+                        default=wol_enabled,
+                    ): cv.boolean,
+                    vol.Optional(
+                        CONF_WOL_BROADCAST_ADDRESS,
+                        default=wol_broadcast_address,
+                    ): vol.All(cv.string, vol.Length(min=1)),
+                    vol.Optional(
+                        CONF_WOL_BROADCAST_PORT,
+                        default=wol_broadcast_port,
+                    ): vol.All(
+                        vol.Coerce(int),
+                        vol.Range(min=1, max=65535),
+                    ),
+                    vol.Optional(
+                        CONF_WOL_TIMEOUT,
+                        default=wol_timeout,
+                    ): vol.All(
+                        vol.Coerce(int),
+                        vol.Range(
+                            min=MIN_WOL_TIMEOUT,
+                            max=MAX_WOL_TIMEOUT,
+                        ),
+                    ),
+                    vol.Optional(
+                        CONF_WOL_SEND_POWER,
+                        default=wol_send_power,
+                    ): cv.boolean,
                 }
             ),
         )

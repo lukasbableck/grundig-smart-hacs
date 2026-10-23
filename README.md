@@ -22,8 +22,10 @@ Tested on a **Grundig Ultralogic FHD** with firmware
 - `select` entity for the current channel, populated from the TV's full
   DTV/Radio channel list
 - One `button` entity per remote key (49 buttons) for clickable dashboards
+- Wake-on-LAN power-on using the MAC address reported by the TV, with
+  configurable broadcast address, port, and timeout
 - UI config flow (IP + port, validated against `/gettvinfo`)
-- Options flow for the poll interval (5–300 seconds)
+- Options flow for the poll interval and Wake-on-LAN
 - Diagnostics support
 
 ## Requirements
@@ -69,8 +71,17 @@ Enter:
 The TV must be switched on during setup so the integration can read
 `/gettvinfo`. The MAC address is used as the unique ID.
 
-After setup you can change the poll interval under
-**Settings → Devices & services → Grundig Smart TV → Configure**.
+After setup you can change these options under
+**Settings → Devices & services → Grundig Smart TV → Configure**:
+
+| Option | Default | Notes |
+| --- | --- | --- |
+| Poll interval | `30` s | How often `/getchannel` is polled (5–300 s) |
+| Enable Wake-on-LAN | on | Used when the TV is unreachable and you turn it on |
+| Wake-on-LAN broadcast address | `255.255.255.255` | Use your subnet broadcast, e.g. `192.168.1.255`, if the global broadcast is blocked |
+| Wake-on-LAN port | `9` | UDP port for the magic packet |
+| Wake-on-LAN wait timeout | `30` s | How long to wait for the TV's HTTP API to return |
+| Send power key after Wake-on-LAN | off | Enable only if WOL wakes the network interface but leaves the TV in standby |
 
 ## Entities
 
@@ -279,6 +290,8 @@ The integration uses these endpoints:
 - `GET /list` — channel list used by `play_media`
 - `GET /setchannel?no=<number>&service=<DTV|ATV|Radio|Data>` — channel switch
 - `GET /sendrcpackage?keyid=<id>&keysymbol=<symbol>` — remote key press
+- UDP magic packet to the MAC from `/gettvinfo` — Wake-on-LAN when the HTTP
+  API is unreachable and `turn_on` is requested
 
 The key table was extracted from the React Native bundle of **Grundig Smart
 Remote 3.28**, the last app version that still contained the legacy HTTP
@@ -293,10 +306,16 @@ not use it.
 
 ## Limitations
 
-- **Power-on from standby** only works if the TV keeps its HTTP service alive
-  in standby. On many of these sets port 8085 disappears when the TV is off.
-  If `media_player.turn_on` reports that the TV is unreachable, use Wake-on-LAN
-  or an IR blaster for power-on. Power-off works while the TV is reachable.
+- **Power-on** uses the HTTP API when the TV is reachable. If `/getchannel`
+  is unreachable, `turn_on` sends a Wake-on-LAN magic packet to the MAC from
+  `/gettvinfo` and waits up to the configured timeout (30 seconds by default)
+  for the HTTP API to return. Trigger this with `media_player.turn_on` or
+  `remote.turn_on`; the raw Power button only sends the `POWER` key. WOL
+  usually requires a wired Ethernet connection and must be enabled in the TV
+  settings. If WOL only wakes the network interface but leaves the screen off,
+  enable **Send power key after Wake-on-LAN**. Do not enable that option if WOL
+  fully powers on the TV — the extra `POWER` press would turn it off again.
+  Power-off works while the TV is reachable.
 - There is **no absolute volume, mute, or power feedback**. Volume is step-based,
   mute is optimistic, and power state is inferred from whether `/getchannel`
   responds (with a 20-second override after sending `POWER`). Because of that,
@@ -334,6 +353,17 @@ not use it.
      logs:
        custom_components.grundig_smart: debug
    ```
+
+### Wake-on-LAN does not work
+
+- WOL is usually **Ethernet-only**. If the TV is on Wi-Fi, standby WOL may not
+  work at all.
+- Enable Wake-on-LAN in the TV's network settings.
+- Try your subnet broadcast address (for example `192.168.1.255`) instead of
+  `255.255.255.255`; many routers drop the global broadcast.
+- Make sure UDP port `9` (or the port you configured) is not blocked.
+- The MAC address is read from `/gettvinfo` during setup. If the TV's network
+  adapter changed, re-add the integration.
 
 ## License
 
