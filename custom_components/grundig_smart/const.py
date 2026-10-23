@@ -36,6 +36,15 @@ PATH_CHANNEL: Final = "/getchannel"
 PATH_CHANNEL_LIST: Final = "/list"
 PATH_SET_CHANNEL: Final = "/setchannel"
 PATH_SEND_KEY: Final = "/sendrcpackage"
+PATH_WS: Final = "/foo"
+
+# The TV's WebSocket API accepts the HDMI port as a decimal string.
+HDMI_INPUTS: Final[dict[str, int]] = {
+    "HDMI 1": 1,
+    "HDMI 2": 2,
+    "HDMI 3": 3,
+    "HDMI 4": 4,
+}
 
 # Values are signed 16-bit integers as expected by /sendrcpackage.
 KEY_MAP: Final[dict[str, tuple[int, int]]] = {

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any
 
@@ -14,6 +15,7 @@ from .const import (
     PATH_SEND_KEY,
     PATH_SET_CHANNEL,
     PATH_TV_INFO,
+    PATH_WS,
 )
 
 
@@ -135,3 +137,31 @@ class GrundigApi:
             raise GrundigApiError(
                 f"TV could not switch to channel {channel_number}: {body[:200]}"
             )
+
+    async def async_open_hdmi(self, input_number: int) -> None:
+        """Switch the TV to an HDMI input using the WebSocket API.
+
+        The TV implements this command as ``open_hdmi`` with a generic
+        ``value`` field. It does not send an acknowledgement, so the
+        connection is kept open only long enough for the message to be
+        delivered.
+        """
+        if input_number not in (1, 2, 3, 4):
+            raise GrundigApiError(f"Unsupported HDMI input {input_number}")
+
+        url = f"ws://{self.host}:{self.port}{PATH_WS}"
+        try:
+            async with self._session.ws_connect(
+                url,
+                timeout=self._timeout.total or 10.0,
+            ) as websocket:
+                await websocket.send_json(
+                    {"event": "open_hdmi", "value": str(input_number)}
+                )
+                # The message is fire-and-forget; give the TV a moment to
+                # hand it to the input manager before closing the socket.
+                await asyncio.sleep(0.5)
+        except (TimeoutError, aiohttp.ClientError) as err:
+            raise GrundigConnectionError(
+                f"Unable to open HDMI {input_number} on {url}: {err}"
+            ) from err

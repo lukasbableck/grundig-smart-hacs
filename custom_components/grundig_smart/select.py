@@ -11,7 +11,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api import GrundigError
-from .const import CONF_TV_INFO
+from .const import CONF_TV_INFO, HDMI_INPUTS
 from .coordinator import GrundigCoordinator
 from .entity import GrundigEntity
 
@@ -21,17 +21,49 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Grundig channel select."""
+    """Set up the Grundig selects."""
     runtime = entry.runtime_data
+    tv_info = entry.data.get(CONF_TV_INFO, {})
     async_add_entities(
         [
-            GrundigChannelSelect(
-                runtime.coordinator,
-                entry,
-                entry.data.get(CONF_TV_INFO, {}),
-            )
+            GrundigChannelSelect(runtime.coordinator, entry, tv_info),
+            GrundigSourceSelect(runtime.coordinator, entry, tv_info),
         ]
     )
+
+
+class GrundigSourceSelect(GrundigEntity, SelectEntity):
+    """Switch the TV to one of its HDMI inputs."""
+
+    _attr_name = "Source"
+    _attr_icon = "mdi:video-input-hdmi"
+    _attr_options = list(HDMI_INPUTS)
+    _attr_current_option: str | None = None
+
+    def __init__(
+        self,
+        coordinator: GrundigCoordinator,
+        entry: ConfigEntry,
+        tv_info: dict[str, Any],
+    ) -> None:
+        super().__init__(coordinator, entry, tv_info)
+        self._attr_unique_id = f"{entry.unique_id or entry.entry_id}_source"
+
+    async def async_select_option(self, option: str) -> None:
+        """Switch to the selected HDMI input."""
+        input_number = HDMI_INPUTS.get(option)
+        if input_number is None:
+            raise HomeAssistantError(f"Unknown source {option!r}.")
+
+        try:
+            await self.coordinator.api.async_open_hdmi(input_number)
+        except GrundigError as err:
+            raise HomeAssistantError(
+                f"Could not switch to {option}."
+            ) from err
+
+        self._attr_current_option = option
+        self.async_write_ha_state()
 
 
 class GrundigChannelSelect(GrundigEntity, SelectEntity):
