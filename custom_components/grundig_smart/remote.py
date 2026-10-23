@@ -13,6 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api import GrundigError
 from .const import CONF_TV_INFO, resolve_key
+from .coordinator import GrundigCoordinator
 from .entity import GrundigEntity
 
 
@@ -38,6 +39,15 @@ class GrundigRemote(GrundigEntity, RemoteEntity):
     """Send arbitrary keys to the TV."""
 
     _attr_name = "Remote"
+
+    def __init__(
+        self,
+        coordinator: GrundigCoordinator,
+        entry: ConfigEntry,
+        tv_info: dict[str, Any],
+    ) -> None:
+        super().__init__(coordinator, entry, tv_info)
+        self._attr_unique_id = f"{entry.unique_id or entry.entry_id}_remote"
 
     async def async_turn_on(self) -> None:
         """Turn the TV on."""

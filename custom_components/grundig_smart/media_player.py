@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from homeassistant.components.media_player import (
+    MediaPlayerDeviceClass,
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
     MediaPlayerState,
@@ -42,6 +43,7 @@ class GrundigMediaPlayer(GrundigEntity, MediaPlayerEntity):
     """Representation of a Grundig SMART inter@ctive TV."""
 
     _attr_name = None
+    _attr_device_class = MediaPlayerDeviceClass.TV
 
     def __init__(
         self,
@@ -50,6 +52,7 @@ class GrundigMediaPlayer(GrundigEntity, MediaPlayerEntity):
         tv_info: dict[str, Any],
     ) -> None:
         super().__init__(coordinator, entry, tv_info)
+        self._attr_unique_id = entry.unique_id or entry.entry_id
         self._attr_is_volume_muted = False
 
     @property
@@ -58,11 +61,10 @@ class GrundigMediaPlayer(GrundigEntity, MediaPlayerEntity):
         return (
             MediaPlayerEntityFeature.TURN_ON
             | MediaPlayerEntityFeature.TURN_OFF
-            | MediaPlayerEntityFeature.VOLUME_UP
-            | MediaPlayerEntityFeature.VOLUME_DOWN
+            | MediaPlayerEntityFeature.VOLUME_STEP
             | MediaPlayerEntityFeature.VOLUME_MUTE
-            | MediaPlayerEntityFeature.CHANNEL_UP
-            | MediaPlayerEntityFeature.CHANNEL_DOWN
+            | MediaPlayerEntityFeature.PREVIOUS_TRACK
+            | MediaPlayerEntityFeature.NEXT_TRACK
             | MediaPlayerEntityFeature.PLAY_MEDIA
         )
 
@@ -119,12 +121,12 @@ class GrundigMediaPlayer(GrundigEntity, MediaPlayerEntity):
         self._attr_is_volume_muted = mute
         self.async_write_ha_state()
 
-    async def async_channel_up(self) -> None:
-        """Switch to the next channel."""
+    async def async_media_next_track(self) -> None:
+        """Switch to the next channel (shown as next track)."""
         await self._async_key("CHPLUS")
 
-    async def async_channel_down(self) -> None:
-        """Switch to the previous channel."""
+    async def async_media_previous_track(self) -> None:
+        """Switch to the previous channel (shown as previous track)."""
         await self._async_key("CHMINUS")
 
     async def async_play_media(

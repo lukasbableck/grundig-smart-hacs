@@ -12,7 +12,8 @@ Tested on a **Grundig Ultralogic FHD** with firmware
 - `media_player` entity:
   - turn on/off
   - volume up/down and mute
-  - channel up/down
+  - channel up/down (shown as the previous/next track buttons, because Home
+    Assistant has no separate channel feature flag)
   - switch to a channel by number or name via `media_player.play_media`
   - current channel name as the media title, plus channel number/type/source attributes
 - `remote` entity with the full key set from the Grundig Smart Remote app,
