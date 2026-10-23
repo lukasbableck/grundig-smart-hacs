@@ -17,7 +17,7 @@ from .const import (
 )
 from .coordinator import GrundigCoordinator
 
-PLATFORMS = [Platform.MEDIA_PLAYER, Platform.REMOTE]
+PLATFORMS = [Platform.MEDIA_PLAYER, Platform.REMOTE, Platform.SELECT]
 
 
 @dataclass

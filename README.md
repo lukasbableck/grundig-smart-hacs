@@ -19,6 +19,8 @@ Tested on a **Grundig Ultralogic FHD** with firmware
 - `remote` entity with the full key set from the Grundig Smart Remote app,
   including navigation, menus, digits, colour keys, transport keys, Netflix,
   the smart portal, and raw `keyid:keysymbol` pairs
+- `select` entity for the current channel, populated from the TV's full
+  DTV/Radio channel list
 - UI config flow (IP + port, validated against `/gettvinfo`)
 - Options flow for the poll interval (5–300 seconds)
 - Diagnostics support
@@ -75,6 +77,7 @@ Assuming the TV reports its name as `Ultralogic FHD`:
 
 - `media_player.ultralogic_fhd`
 - `remote.ultralogic_fhd_remote`
+- `select.ultralogic_fhd_channel`
 
 The exact entity IDs depend on your naming and existing entities.
 
@@ -173,6 +176,46 @@ data:
   media_content_id: "Das Erste HD"
 ```
 
+The channel `select` entity uses labels in the form
+`<number> · <name> (<service>)`, for example
+`3 · RTL Television (DTV)`:
+
+```yaml
+action: select.select_option
+target:
+  entity_id: select.ultralogic_fhd_channel
+data:
+  option: "3 · RTL Television (DTV)"
+```
+
+The TV reports 662 channels (DTV and Radio), so the dropdown is long. The
+`media_player.play_media` action is usually faster for automations.
+
+## Input sources (HDMI)
+
+The legacy HTTP API has **no input/source endpoint**. `/getsource`,
+`/getinput`, `/getinputs`, `/getinputlist` and similar paths all return 404,
+and `/setchannel` silently ignores unknown `service` values such as `HDMI1`.
+The only source control the TV exposes is the `INPUTSOURCE` remote key, which
+opens the TV's own source menu.
+
+You can open that menu with the remote entity and navigate manually:
+
+```yaml
+action: remote.send_command
+target:
+  entity_id: remote.ultralogic_fhd_remote
+data:
+  command:
+    - INPUTSOURCE
+    - DOWN
+    - OK
+```
+
+The menu order and the number of `DOWN` presses depend on your model and on
+which inputs are active, so this is not exposed as a `select` entity. For
+reliable HDMI switching, use discrete IR codes with an IR blaster or HDMI-CEC.
+
 ## How it works
 
 The integration uses these endpoints:
@@ -207,7 +250,9 @@ not use it.
   the state is ever wrong, send the raw toggle with
   `remote.send_command` and `command: POWER`.
 - `/getchannel` returns an empty channel object while the TV is in the smart
-  portal, so the media title is blank there.
+  portal, so the media title and channel select state are blank there.
+- There is **no input-source selection over HTTP**. HDMI/AV switching requires
+  the TV's source menu; see [Input sources (HDMI)](#input-sources-hdmi).
 - Some keys are model-specific. `RECORD` in particular was reconstructed from
   an incomplete constant and may not work on every set.
 - The API is **unauthenticated and unencrypted**. Anyone who can reach port

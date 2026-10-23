@@ -23,7 +23,6 @@ PATH_CHANNEL_LIST: Final = "/list"
 PATH_SET_CHANNEL: Final = "/setchannel"
 PATH_SEND_KEY: Final = "/sendrcpackage"
 
-# Key map extracted from the Grundig Smart Remote 3.28 React Native bundle.
 # Values are signed 16-bit integers as expected by /sendrcpackage.
 KEY_MAP: Final[dict[str, tuple[int, int]]] = {
     "POWER": (-2544, -4081),
