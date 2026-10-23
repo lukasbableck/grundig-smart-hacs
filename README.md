@@ -21,6 +21,7 @@ Tested on a **Grundig Ultralogic FHD** with firmware
   the smart portal, and raw `keyid:keysymbol` pairs
 - `select` entity for the current channel, populated from the TV's full
   DTV/Radio channel list
+- One `button` entity per remote key (49 buttons) for clickable dashboards
 - UI config flow (IP + port, validated against `/gettvinfo`)
 - Options flow for the poll interval (5–300 seconds)
 - Diagnostics support
@@ -78,8 +79,61 @@ Assuming the TV reports its name as `Ultralogic FHD`:
 - `media_player.ultralogic_fhd`
 - `remote.ultralogic_fhd_remote`
 - `select.ultralogic_fhd_channel`
+- 49 button entities such as `button.ultralogic_fhd_power`,
+  `button.ultralogic_fhd_volume_up`, `button.ultralogic_fhd_ok`, and
+  `button.ultralogic_fhd_netflix`
 
-The exact entity IDs depend on your naming and existing entities.
+The exact entity IDs depend on your naming and existing entities. You can
+disable buttons you do not need under **Settings → Devices & services →
+Entities**.
+
+## Remote buttons
+
+Home Assistant's `remote` entity is service-style. It looks empty on the
+device page because it has no activities to display; it is controlled with
+`remote.send_command` instead. For clickable controls, the integration exposes
+one `button` entity per key:
+
+- `button.ultralogic_fhd_power`
+- `button.ultralogic_fhd_volume_up` / `button.ultralogic_fhd_volume_down`
+- `button.ultralogic_fhd_channel_up` / `button.ultralogic_fhd_channel_down`
+- `button.ultralogic_fhd_up` / `down` / `left` / `right`
+- `button.ultralogic_fhd_ok`, `back`, `menu`, `info`, `guide`, `source`
+- `button.ultralogic_fhd_red`, `green`, `yellow`, `blue`
+- `button.ultralogic_fhd_0` … `button.ultralogic_fhd_9`
+- `button.ultralogic_fhd_play`, `pause`, `stop`, `record`, `rewind`,
+  `fast_forward`, `previous`, `next`
+- `button.ultralogic_fhd_netflix`, `internet`, `3d`
+
+A simple dashboard grid:
+
+```yaml
+type: grid
+columns: 4
+square: true
+cards:
+  - type: button
+    entity: button.ultralogic_fhd_power
+  - type: button
+    entity: button.ultralogic_fhd_up
+  - type: button
+    entity: button.ultralogic_fhd_ok
+  - type: button
+    entity: button.ultralogic_fhd_down
+  - type: button
+    entity: button.ultralogic_fhd_back
+  - type: button
+    entity: button.ultralogic_fhd_menu
+  - type: button
+    entity: button.ultralogic_fhd_volume_up
+  - type: button
+    entity: button.ultralogic_fhd_volume_down
+```
+
+The TV exposes two Internet key variants. Try `button.ultralogic_fhd_internet`
+first, then `button.ultralogic_fhd_internet_alternate` if it does nothing.
+
+The `remote` entity is still the better choice for sequences and raw key IDs.
 
 ## Sending remote keys
 
