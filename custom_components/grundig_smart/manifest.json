@@ -1,0 +1,11 @@
+{
+  "domain": "grundig_smart",
+  "name": "Grundig Smart TV",
+  "codeowners": ["@lukasbableck"],
+  "config_flow": true,
+  "documentation": "https://github.com/lukasbableck/grundig-smart-hacs",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/lukasbableck/grundig-smart-hacs/issues",
+  "version": "0.1.0"
+}

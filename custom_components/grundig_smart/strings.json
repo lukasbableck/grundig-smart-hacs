@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Grundig Smart TV",
+        "description": "Enter the network address of your Grundig SMART inter@ctive TV. The TV must be switched on.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "name": "Name (optional)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to the TV. Check the IP address and that port 8085 is reachable.",
+      "invalid_response": "The device answered, but not like a supported Grundig TV."
+    },
+    "abort": {
+      "already_configured": "This TV is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Grundig Smart TV options",
+        "data": {
+          "scan_interval": "Poll interval (seconds)"
+        }
+      }
+    }
+  }
+}
