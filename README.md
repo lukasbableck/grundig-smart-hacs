@@ -47,8 +47,8 @@ Tested on a **Grundig Ultralogic FHD** with firmware
 ### HACS (recommended)
 
 1. Open HACS → **Integrations** → menu → **Custom repositories**.
-2. Add the repository URL (for example
-   `https://github.com/lukasbableck/grundig-smart-hacs`) with category **Integration**.
+2. Add the repository URL `https://github.com/lukasbableck/grundig-smart-hacs`
+   with category **Integration**.
 3. Install **Grundig Smart TV**, then restart Home Assistant.
 4. Go to **Settings → Devices & services → Add integration** and search for
    **Grundig Smart TV**.
